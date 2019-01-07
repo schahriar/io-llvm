@@ -1,0 +1,6 @@
+[requires]
+pegtl/2.7.1@taocpp/stable
+jsonformoderncpp/3.3.0@vthiery/stable
+
+[generators]
+cmake

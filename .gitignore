@@ -30,3 +30,37 @@
 *.exe
 *.out
 *.app
+
+# So many cmake files
+CMakeLists.txt.user
+CMakeCache.txt
+CMakeFiles
+CMakeScripts
+Testing
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+
+# Ever more LLVM files
+# note that the docker image has the build
+# this is purely for intellisense purposes
+thirdparty
+
+# Ignore IDE config
+.vscode
+
+# Some Conan files
+conanbuildinfo.txt
+conanbuildinfo.cmake
+graph_info.json
+
+# Ignoring generated debug logs
+debug/logs/memcheck.log
+
+# Sins from before adding git to this codebase
+src/_old
+
+# Binaries
+bin

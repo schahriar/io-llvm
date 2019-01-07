@@ -1,0 +1,7 @@
+version: '3'
+services:
+  runtime:
+    build: .
+    volumes: 
+      - .:/code:cached
+    privileged: true
