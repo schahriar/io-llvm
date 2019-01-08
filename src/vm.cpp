@@ -72,8 +72,8 @@ int main(int argc, char* argv[]) {
         iolang::writers::print(*root);
         auto ast = iolang::AST::loadFromParseTree(*root);
 
-        iolang::codegen::declare();
-        std::cout << "FINALLY? " << iolang::codegen::to_string(*ast) << std::endl;
+        iolang::codegen::register_decl();
+        std::cout << "RESULTS: " << iolang::codegen::to_string(*ast) << std::endl;
       } else {
         std::cout << "PARSE FAILED" << std::endl;
       }

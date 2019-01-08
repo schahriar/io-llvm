@@ -5,9 +5,9 @@
 #include <vector>
 #include <functional>
 #include <variant>
+#include <utility>
 #include "AST/AST.hpp"
 #include "utils/Dispatcher.hpp"
-#include <iostream>
 
 /**
  * Concious implementation against the visitor pattern,
@@ -24,16 +24,12 @@ namespace iolang {
 
     // Dispatcher definitions
     typedef std::function<std::string(const ASTNode&)> lambda_r_string_t;
-    auto dispatcher = Dispatcher<lambda_r_string_t>();
+    static Dispatcher<lambda_r_string_t> dt = Dispatcher<lambda_r_string_t>();
 
     // Method definitions
-    std::string to_string(const ASTNode& node) {
-      std::cout << "NOW INVOKING " << node.ref << std::endl;
-      auto x = dispatcher.invoke("to_string", node.ref);
-      return x(node);
-    };
+    std::string to_string(const ASTNode& node);
 
-    const ast_shared_node_t find(const ASTNode& node, std::string ref) {
+    inline const ast_shared_node_t find(const ASTNode& node, std::string ref) {
       const auto& it = node.nodes.find(ref);
 
       if (it == node.nodes.end()) {
@@ -41,37 +37,17 @@ namespace iolang {
       }
 
       return it->second;
-    }
+    };
 
-    void declare() {
-      // Weird wrapper but should be inlined
-      const auto declare = [&](auto a, auto b, auto c) { dispatcher.declare(a, b, c); };
+    static const auto invoke = [](auto a, auto b) { return dt.invoke(a, b); };
+    static const auto define = [](auto a, auto b) { dt.define(a, b); };
+    static const auto similar = [](auto a, auto b) { dt.similar(a, b); };
+    static const auto declare = [](auto a, auto b, auto c) { dt.declare(a, b, c); };
 
-      dispatcher.define(std::vector<std::string>{
-        "to_string"
-      });
-
-      dispatcher.similar("iolang::language::name", "iolang::language");
-
-      // Method implementation
-      declare("to_string", "ROOT", [](const ASTNode& node) {
-        return "ROOT" + to_string(*node.nodes.find("iolang::language::equal")->second);
-      });
-
-      declare("to_string", "iolang::language", [](const ASTNode& node) {
-        return node.ref;
-      });
-
-      declare("to_string", "iolang::language::type", [](const ASTNode& node) {
-        auto& next = find(node, "iolang::language::name");
-        return "TYPE" + to_string(*next);
-      });
-
-      declare("to_string", "iolang::language::equal", [](const ASTNode& node) {
-        auto& next = find(node, "iolang::language::type");
-        return "EQUAL" + node.ref + " " + to_string(*next);
-      });
-    }
+    void declare_standard_dispatchers();
+    static void register_decl() {
+      declare_standard_dispatchers();
+    };
   }
 }
 

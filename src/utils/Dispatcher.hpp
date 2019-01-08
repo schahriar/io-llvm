@@ -35,40 +35,41 @@ namespace iolang {
     };
 
     template <typename T>
-    struct DispatchReference {
-      DispatchReference(T func, T next) : func(func), next(next) {};
+    struct DispatchTable {
+      DispatchTable(
+        T root,
+        std::map<std::string, T> table = {}
+      ) : table(table), root(root) {};
 
-      T func;
-      T next;
+      std::map<std::string, T> table;
+      T root;
     };
 
     template <class T>
     class Dispatcher {
       private:
-        std::map<std::string, std::map<std::string, T>> routes;
+        std::map<std::string, DispatchTable<T>> routes;
         std::map<std::string, std::string> fallbacks;
 
       public:
         Dispatcher(
-          std::map<std::string, std::map<std::string, T>> routes = {{}},
+          std::map<std::string, DispatchTable<T>> routes = {{}},
           std::map<std::string, std::string> fallbacks = {}
         ): routes(routes), fallbacks(fallbacks) {};
 
-        void define(std::vector<std::string> scopes) {
-          for (auto& scope : scopes) {
-            routes.insert(
-              std::pair<
-                std::string,
-                std::map<std::string, T>
-              >(scope, std::map<std::string, T>{})
-            );
-          }
+        void define(std::string scope, T root) {
+          routes.insert(
+            std::pair<std::string, DispatchTable<T>>(
+              scope,
+              DispatchTable<T>(root)
+            )
+          );
         }
 
         void declare(std::string scope, std::string reference, T func) {
-          auto& table = routes.find(scope)->second;
+          auto& dt = routes.find(scope)->second;
 
-          table.insert(
+          dt.table.insert(
             std::pair<std::string, T>(reference, func)
           );
         }
@@ -80,7 +81,8 @@ namespace iolang {
         }
 
         T invoke(std::string scope, std::string reference) {
-          const auto& table = routes.find(scope)->second;
+          const auto& dt = routes.find(scope)->second;
+          const auto& table = dt.table;
           const auto& ref = table.find(reference);
           const auto& next = fallbacks.find(reference);
 
@@ -89,6 +91,10 @@ namespace iolang {
           if (ref == table.end()) {
             if (next != fallbacks.end()) {
               return invoke(scope, next->second);
+            }
+
+            if (dt.root) {
+              return dt.root;
             }
 
             throw DispatchFunctionNotFound();
